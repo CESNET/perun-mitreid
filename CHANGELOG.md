@@ -1,18 +1,28 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [v2.4.0]
 ### Added
 - Added custom view for logout confirmation page
+- empty claims are filtered out instead of producing null values
+- added custom views for device code flow related screens
+- added support for MFA in device code flow
+- added claim source for extended entitlements
 ### Changed
 - refactored RPC mapper
-- modified filter utility method checking given to check only for null or empty and not try to put protocol as well
+- modified filter utility method checking giveni URL to check only for null or empty and not try to put protocol as well
 - make use of contact.email property in UNAPPROVED view when no contact is available for client
 - extended GA4GH claim source to support multliple configurable headers
+- removed "large" types of perun attributes as done in Perun
+- refactored logging (for claim scopes, modifiers and filters)
 ### Fixed
 - fixed calling wrong methods in attributes fetching of RPC adapter
 - fixed mapping of user: the firstName field is optional
-
+- fixed fetching and comparing the "members" group in RPC adapter
+### Important changes 
+- configuration for each claimSource needs to explicitly have the class in the properties file
+- if no class is set in configuration for claimValueModifier, default NoOperation is used
+ 
 ## [v2.3.0]
 ### Added
 - added StaticValueClaimSource
@@ -289,6 +299,7 @@ All notable changes to this project will be documented in this file.
 First release of modified MITREid server which uses Shibboleth for authentication and reads user data from Perun system. It also has support for new scopes and claims, for extension of released access tokens, and for releasing user claims from introspection endpoint.
 
 [Unreleased]: https://github.com/CESNET/perun-mitreid/tree/master
+[v2.4.0]: https://github.com/CESNET/perun-mitreid/releases/tag/v2.4.0
 [v2.3.0]: https://github.com/CESNET/perun-mitreid/releases/tag/v2.3.0
 [v2.2.0]: https://github.com/CESNET/perun-mitreid/releases/tag/v2.2.0
 [v2.1.1]: https://github.com/CESNET/perun-mitreid/releases/tag/v2.1.1
