@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [v2.4.1]
+### Fixed
+- fixed NullPointerException in searching for facility without clientID
+
 ## [v2.4.0]
 ### Added
 - Added custom view for logout confirmation page
