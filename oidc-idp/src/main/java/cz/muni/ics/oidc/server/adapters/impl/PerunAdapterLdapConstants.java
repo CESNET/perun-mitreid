@@ -8,6 +8,7 @@ public class PerunAdapterLdapConstants {
     public static final String SN = "sn";
     public static final String DESCRIPTION = "description";
     public static final String OBJECT_CLASS = "objectClass";
+    public static final String OU_PEOPLE = "ou=People";
 
     // USER
     public static final String PERUN_USER = "perunUser";

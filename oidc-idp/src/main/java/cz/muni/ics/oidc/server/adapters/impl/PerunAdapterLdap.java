@@ -28,6 +28,7 @@ import org.apache.directory.ldap.client.api.search.FilterBuilder;
 import org.apache.directory.ldap.client.template.EntryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ import static cz.muni.ics.oidc.server.adapters.impl.PerunAdapterLdapConstants.GI
 import static cz.muni.ics.oidc.server.adapters.impl.PerunAdapterLdapConstants.MEMBER_OF;
 import static cz.muni.ics.oidc.server.adapters.impl.PerunAdapterLdapConstants.O;
 import static cz.muni.ics.oidc.server.adapters.impl.PerunAdapterLdapConstants.OBJECT_CLASS;
+import static cz.muni.ics.oidc.server.adapters.impl.PerunAdapterLdapConstants.OU_PEOPLE;
 import static cz.muni.ics.oidc.server.adapters.impl.PerunAdapterLdapConstants.PERUN_FACILITY;
 import static cz.muni.ics.oidc.server.adapters.impl.PerunAdapterLdapConstants.PERUN_FACILITY_DN;
 import static cz.muni.ics.oidc.server.adapters.impl.PerunAdapterLdapConstants.PERUN_FACILITY_ID;
@@ -82,7 +84,7 @@ public class PerunAdapterLdap extends PerunAdapterWithMappingServices implements
 	private PerunConnectorLdap connectorLdap;
 	private String oidcClientIdAttr;
 	private String oidcCheckMembershipAttr;
-	private JsonNodeFactory jsonNodeFactory = JsonNodeFactory.instance;
+	private final JsonNodeFactory jsonNodeFactory = JsonNodeFactory.instance;
 
 	public void setConnectorLdap(PerunConnectorLdap connectorLdap) {
 		this.connectorLdap = connectorLdap;
@@ -104,8 +106,9 @@ public class PerunAdapterLdap extends PerunAdapterWithMappingServices implements
 	 */
 	@Override
 	public PerunUser getPreauthenticatedUserId(PerunPrincipal perunPrincipal) {
-		String dnPrefix = "ou=People";
-		FilterBuilder filter = and(equal(OBJECT_CLASS, PERUN_USER), equal(EDU_PERSON_PRINCIPAL_NAMES, perunPrincipal.getExtLogin()));
+		FilterBuilder filter = and(
+				equal(OBJECT_CLASS, PERUN_USER), equal(EDU_PERSON_PRINCIPAL_NAMES, perunPrincipal.getExtLogin())
+		);
 		SearchScope scope = SearchScope.ONELEVEL;
 		String[] attributes = new String[]{PERUN_USER_ID, GIVEN_NAME, SN};
 		EntryMapper<PerunUser> mapper = e -> {
@@ -119,11 +122,14 @@ public class PerunAdapterLdap extends PerunAdapterWithMappingServices implements
 			return new PerunUser(id, firstName, lastName);
 		};
 
-		return connectorLdap.searchFirst(dnPrefix, filter, scope, attributes, mapper);
+		return connectorLdap.searchFirst(OU_PEOPLE, filter, scope, attributes, mapper);
 	}
 
 	@Override
 	public Facility getFacilityByClientId(String clientId) {
+		if (!StringUtils.hasText(clientId)) {
+			return null;
+		}
 		SearchScope scope = SearchScope.ONELEVEL;
 		String[] attributes = new String[]{PERUN_FACILITY_ID, DESCRIPTION, CN};
 		EntryMapper<Facility> mapper = e -> {
@@ -173,7 +179,7 @@ public class PerunAdapterLdap extends PerunAdapterWithMappingServices implements
 
 	@Override
 	public boolean isUserInGroup(Long userId, Long groupId) {
-		String uniqueMemberValue = PERUN_USER_ID + '=' + userId + ",ou=People," + connectorLdap.getBaseDN();
+		String uniqueMemberValue = PERUN_USER_ID + '=' + userId + ',' + OU_PEOPLE + ',' + connectorLdap.getBaseDN();
 		FilterBuilder filter = and(
 				equal(OBJECT_CLASS, PERUN_GROUP),
 				equal(PERUN_GROUP_ID, String.valueOf(groupId)),
@@ -279,7 +285,7 @@ public class PerunAdapterLdap extends PerunAdapterWithMappingServices implements
 
 	@Override
 	public Map<String, PerunAttributeValue> getUserAttributeValues(Long userId, Collection<String> attrsToFetch) {
-		String dnPrefix = PERUN_USER_ID + '=' + userId + ",ou=People";
+		String dnPrefix = PERUN_USER_ID + '=' + userId + ',' + OU_PEOPLE;
 		return getAttributeValues(dnPrefix, attrsToFetch, PerunEntityType.USER);
 	}
 
@@ -561,7 +567,7 @@ public class PerunAdapterLdap extends PerunAdapterWithMappingServices implements
 	}
 
 	private String getDnPrefixForUserId(Long userId) {
-		return PERUN_USER_ID + '=' + userId + ",ou=People";
+		return PERUN_USER_ID + '=' + userId + ',' + OU_PEOPLE;
 	}
 
 	private Set<Long> getGroupIdsWithAccessToFacility(Long facilityId) {

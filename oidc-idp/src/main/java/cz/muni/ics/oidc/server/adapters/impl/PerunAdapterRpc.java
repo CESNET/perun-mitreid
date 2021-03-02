@@ -24,6 +24,7 @@ import cz.muni.ics.oidc.server.connectors.Affiliation;
 import cz.muni.ics.oidc.server.connectors.PerunConnectorRpc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,6 +103,8 @@ public class PerunAdapterRpc extends PerunAdapterWithMappingServices implements 
 	@Override
 	public Facility getFacilityByClientId(String clientId) {
 		if (!this.connectorRpc.isEnabled()) {
+			return null;
+		} else if (!StringUtils.hasText(clientId)) {
 			return null;
 		}
 
